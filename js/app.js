@@ -1,3 +1,6 @@
+import View from './view.js';
+import Model from './model.js';
+
 const App = {
   $: {
     turn: document.querySelector("[data-id='turn'"),
@@ -48,7 +51,7 @@ const App = {
     });
 
     return {
-      status: moves.length === 9 || winner != null ? "complete" : "in-progress", // in-progress | complete
+      status: moves.length === 9 || winner != null ? 'complete' : 'in-progress', // in-progress | complete
       winner: winner, // 1 | 2 | null
     };
   },
@@ -60,22 +63,22 @@ const App = {
   },
 
   registerEventListeners() {
-    App.$.menu.addEventListener("click", (event) => {
-      App.$.menuItems.classList.toggle("hidden");
+    App.$.menu.addEventListener('click', (event) => {
+      App.$.menuItems.classList.toggle('hidden');
     });
 
-    App.$.resetBtn.addEventListener("click", (event) => {});
+    App.$.resetBtn.addEventListener('click', (event) => {});
 
-    App.$.newRoundBtn.addEventListener("click", (event) => {});
+    App.$.newRoundBtn.addEventListener('click', (event) => {});
 
-    App.$.modalBtn.addEventListener("click", (event) => {
+    App.$.modalBtn.addEventListener('click', (event) => {
       App.state.moves = [];
-      App.$.squares.forEach((square) => square.replaceChildren(""));
-      App.$.modal.classList.add("hidden");
+      App.$.squares.forEach((square) => square.replaceChildren(''));
+      App.$.modal.classList.add('hidden');
     });
 
     App.$.squares.forEach((square) => {
-      square.addEventListener("click", (event) => {
+      square.addEventListener('click', (event) => {
         const hasMove = (squareId) => {
           const existingMove = App.state.moves.find(
             (move) => move.squareId === squareId
@@ -94,20 +97,20 @@ const App = {
             ? 1
             : getOppositePlayer(lastMove.playerId);
 
-        const turnLabel = document.createElement("p");
+        const turnLabel = document.createElement('p');
         const nextPlayer = getOppositePlayer(currentPlayer);
         turnLabel.innerText = `Player ${nextPlayer}, you're up!`;
-        const icon = document.createElement("i");
-        const nextIcon = document.createElement("i");
+        const icon = document.createElement('i');
+        const nextIcon = document.createElement('i');
 
         if (currentPlayer === 1) {
-          icon.classList.add("fa-solid", "fa-x", "yellow");
-          nextIcon.classList.add("fa-solid", "fa-o", "turquoise");
-          turnLabel.classList.add("turquoise");
+          icon.classList.add('fa-solid', 'fa-x', 'yellow');
+          nextIcon.classList.add('fa-solid', 'fa-o', 'turquoise');
+          turnLabel.classList.add('turquoise');
         } else {
-          icon.classList.add("fa-solid", "fa-o", "turquoise");
-          nextIcon.classList.add("fa-solid", "fa-x", "yellow");
-          turnLabel.classList.add("yellow");
+          icon.classList.add('fa-solid', 'fa-o', 'turquoise');
+          nextIcon.classList.add('fa-solid', 'fa-x', 'yellow');
+          turnLabel.classList.add('yellow');
         }
 
         App.$.turn.replaceChildren(nextIcon, turnLabel);
@@ -121,13 +124,13 @@ const App = {
 
         const game = App.getGameStatus(App.state.moves);
 
-        if (game.status === "complete") {
-          App.$.modal.classList.remove("hidden");
-          let message = "";
+        if (game.status === 'complete') {
+          App.$.modal.classList.remove('hidden');
+          let message = '';
           if (game.winner) {
             message = `Player ${game.winner} wins!`;
           } else {
-            message = "Tie game!";
+            message = 'Tie game!';
           }
           App.$.modalText.textContent = message;
         }
@@ -136,4 +139,59 @@ const App = {
   },
 };
 
-window.addEventListener("load", App.init);
+const players = [
+  {
+    id: 1,
+    name: 'Player 1',
+    iconClass: 'fa-x',
+    colorClass: 'turquoise',
+  },
+  {
+    id: 2,
+    name: 'Player 2',
+    iconClass: 'fa-o',
+    colorClass: 'yellow',
+  },
+];
+
+function init() {
+  const view = new View();
+  const model = new Model(players);
+
+  view.bindGameResetEvent((event) => {
+    console.log('Reset event');
+    console.log(event);
+  });
+
+  view.bindNewRoundEvent((event) => {
+    console.log('New Round');
+    console.log(event);
+  });
+
+  view.bindPlayerMoveEvent((square) => {
+    const existingMove = model.game.moves.find(
+      (move) => move.squareId === +square.id
+    );
+
+    if (existingMove) {
+      return;
+    }
+
+    view.handlePlayerMove(square, model.game.currentPlayer);
+
+    model.playerMove(+square.id);
+
+    const game = model.game;
+
+    if (game.status.isComplete) {
+      view.openModal(
+        game.status.winner ? `${game.status.winner.name} wins!` : 'Tie!'
+      );
+      return;
+    }
+
+    view.setTurnIndicator(model.game.currentPlayer);
+  });
+}
+
+window.addEventListener('load', init);
