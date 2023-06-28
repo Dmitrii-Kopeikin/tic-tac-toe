@@ -6,7 +6,7 @@ const initialValue = {
   },
 };
 
-export default class Model {
+export default class Model extends EventTarget {
   #winningPatterns = [
     [1, 2, 3],
     [1, 5, 9],
@@ -19,6 +19,7 @@ export default class Model {
   ];
 
   constructor(key, players) {
+    super();
     this.storageKey = key;
     this.players = players;
   }
@@ -130,5 +131,6 @@ export default class Model {
     }
 
     window.localStorage.setItem(this.storageKey, JSON.stringify(newState));
+    this.dispatchEvent(new Event('statechange'));
   }
 }

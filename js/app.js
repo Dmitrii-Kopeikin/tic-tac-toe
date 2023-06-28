@@ -20,35 +20,22 @@ function init() {
   const view = new View();
   const model = new Model('live-t3-key', players);
 
-  function initView() {
-    view.closeAll();
-    view.clearMoves();
-    view.setTurnIndicator(model.game.currentPlayer);
-
-    view.updatScoreBoard(
-      model.stats.playerWithStats[0].wins,
-      model.stats.playerWithStats[1].wins,
-      model.stats.ties
-    );
-    view.initiallizeMoves(model.game.moves);
-  }
-
-  window.addEventListener('storage', (event) => {
-    initView();
+  model.addEventListener('statechange', () => {
+    view.render(model.game, model.stats);
   });
 
-  initView();
+  window.addEventListener('storage', (event) => {
+    view.render(model.game, model.stats);
+  });
+
+  view.render(model.game, model.stats);
 
   view.bindGameResetEvent((event) => {
     model.reset();
-
-    initView();
   });
 
   view.bindNewRoundEvent((event) => {
     model.newRound();
-
-    initView();
   });
 
   view.bindPlayerMoveEvent((square) => {
@@ -60,20 +47,7 @@ function init() {
       return;
     }
 
-    view.handlePlayerMove(square, model.game.currentPlayer);
-
     model.playerMove(+square.id);
-
-    const game = model.game;
-
-    if (game.status.isComplete) {
-      view.openModal(
-        game.status.winner ? `${game.status.winner.name} wins!` : 'Tie!'
-      );
-      return;
-    }
-
-    view.setTurnIndicator(model.game.currentPlayer);
   });
 }
 
