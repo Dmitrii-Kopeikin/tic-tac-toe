@@ -140,7 +140,7 @@ button:hover {
 .items {
   position: absolute;
   z-index: 10px;
-  top: 60px;
+  top: 55px;
   right: 0;
   background-color: #203139;
   border-radius: 2px;

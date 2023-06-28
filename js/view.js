@@ -16,6 +16,10 @@ export default class View {
     this.$.modalText = this.#selectByDataId('modal-text');
     this.$.modalBtn = this.#selectByDataId('modal-btn');
 
+    this.$.player1Score = this.#selectByDataId('player1-stats');
+    this.$.player2Score = this.#selectByDataId('player2-stats');
+    this.$.tiesScore = this.#selectByDataId('ties');
+
     this.$.menuBtn.addEventListener('click', (event) => {
       this.#toggleMenu();
     });
@@ -25,6 +29,7 @@ export default class View {
 
   bindGameResetEvent(handler) {
     this.$.resetBtn.addEventListener('click', handler);
+    this.$.modalBtn.addEventListener('click', handler);
   }
 
   bindNewRoundEvent(handler) {
@@ -39,9 +44,50 @@ export default class View {
 
   // DOM helper methods
 
+  updatScoreBoard(player1Wins, player2Wins, ties) {
+    this.$.player1Score.innerText = `${player1Wins} wins`;
+    this.$.player2Score.innerText = `${player2Wins} wins`;
+    this.$.tiesScore.innerText = `${ties} ties`;
+  }
+
   openModal(message) {
     this.$.modal.classList.remove('hidden');
     this.$.modalText.innerText = message;
+  }
+
+  #closeModal() {
+    this.$.modal.classList.add('hidden');
+  }
+
+  closeAll() {
+    this.#closeModal();
+    this.#closeMenu();
+  }
+
+  clearMoves() {
+    this.$$.squares.forEach((square) => {
+      square.replaceChildren();
+    });
+  }
+
+  initiallizeMoves(moves) {
+    this.$$.squares.forEach((square) => {
+      const existingMove = moves.find((move) => move.squareId == +square.id);
+
+      if (existingMove) {
+        this.handlePlayerMove(square, existingMove.player)
+      }
+    });
+  }
+
+  #closeMenu() {
+    this.$.menuItems.classList.add('hidden');
+    this.$.menuBtn.classList.remove('border');
+
+    const icon = this.$.menuBtn.querySelector('i');
+
+    icon.classList.add('fa-chevron-dow');
+    icon.classList.remove('fa-chevron-up');
   }
 
   #toggleMenu() {
