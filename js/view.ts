@@ -1,6 +1,10 @@
+import Model from './model';
+import { Game, Move, Player, Stats } from './types';
+
 export default class View {
-  $ = {};
-  $$ = {};
+  $: Record<string, Element> = {};
+  $$: Record<string, NodeListOf<Element>> = {};
+
   constructor() {
     this.$.grid = this.#selectByDataId('grid');
 
@@ -27,7 +31,7 @@ export default class View {
     });
   }
 
-  render(game, stats) {
+  render(game: Model['game'], stats: Stats) {
     const { playerWithStats, ties } = stats;
     const {
       moves,
@@ -56,30 +60,30 @@ export default class View {
 
   // Register all the event listeners
 
-  bindGameResetEvent(handler) {
+  bindGameResetEvent(handler: EventListener) {
     this.$.resetBtn.addEventListener('click', handler);
     this.$.modalBtn.addEventListener('click', handler);
   }
 
-  bindNewRoundEvent(handler) {
+  bindNewRoundEvent(handler: EventListener) {
     this.$.newRoundBtn.addEventListener('click', handler);
   }
 
-  bindPlayerMoveEvent(handler) {
+  bindPlayerMoveEvent(handler: (element: Element) => void) {
     this.#delegate(this.$.grid, '[data-id="square"]', 'click', handler);
   }
 
   // DOM helper methods
 
-  #updatScoreBoard(player1Wins, player2Wins, ties) {
-    this.$.player1Score.innerText = `${player1Wins} wins`;
-    this.$.player2Score.innerText = `${player2Wins} wins`;
-    this.$.tiesScore.innerText = `${ties} ties`;
+  #updatScoreBoard(player1Wins: number, player2Wins: number, ties: number) {
+    this.$.player1Score.textContent = `${player1Wins} wins`;
+    this.$.player2Score.textContent = `${player2Wins} wins`;
+    this.$.tiesScore.textContent = `${ties} ties`;
   }
 
-  #openModal(message) {
+  #openModal(message: string) {
     this.$.modal.classList.remove('hidden');
-    this.$.modalText.innerText = message;
+    this.$.modalText.textContent = message;
   }
 
   #closeModal() {
@@ -97,7 +101,7 @@ export default class View {
     });
   }
 
-  #initiallizeMoves(moves) {
+  #initiallizeMoves(moves: Move[]) {
     this.$$.squares.forEach((square) => {
       const existingMove = moves.find((move) => move.squareId == +square.id);
 
@@ -111,7 +115,7 @@ export default class View {
     this.$.menuItems.classList.add('hidden');
     this.$.menuBtn.classList.remove('border');
 
-    const icon = this.$.menuBtn.querySelector('i');
+    const icon = this.#qs('i', this.$.menuBtn);
 
     icon.classList.add('fa-chevron-dow');
     icon.classList.remove('fa-chevron-up');
@@ -121,18 +125,19 @@ export default class View {
     this.$.menuItems.classList.toggle('hidden');
     this.$.menuBtn.classList.toggle('border');
 
-    const icon = this.$.menuBtn.querySelector('i');
+    const icon = this.#qs('i', this.$.menuBtn);
+
     icon.classList.toggle('fa-chevron-down');
     icon.classList.toggle('fa-chevron-up');
   }
 
-  #handlePlayerMove(squere, player) {
+  #handlePlayerMove(squere: Element, player: Player) {
     const icon = document.createElement('i');
     icon.classList.add('fa-solid', player.iconClass, player.colorClass);
     squere.replaceChildren(icon);
   }
 
-  #setTurnIndicator(player) {
+  #setTurnIndicator(player: Player) {
     const icon = document.createElement('i');
     const label = document.createElement('p');
 
@@ -144,30 +149,39 @@ export default class View {
     this.$.turn.replaceChildren(icon, label);
   }
 
-  #qs(selector, parent = document) {
-    const element = parent.querySelector(selector);
+  #qs(selector: string, parent: Element | Document): Element {
+    const element: Element | null = parent.querySelector(selector);
     if (!element)
       throw new Error(`Could not find elements. Selector: '${selector}'.`);
     return element;
   }
 
-  #qsAll(selector, parent = document) {
+  #qsAll(selector: string, parent: Element | Document) {
     const elements = parent.querySelectorAll(selector);
     if (!elements)
       throw new Error(`Could not find elements. Selector: '${selector}'.`);
     return elements;
   }
 
-  #selectByDataId(selector, parent = document) {
+  #selectByDataId(selector: string, parent: Document | Element = document) {
     return this.#qs(`[data-id='${selector}']`, parent);
   }
 
-  #selectByDataIdAll(selector, parent = document) {
+  #selectByDataIdAll(selector: string, parent: Document | Element = document) {
     return this.#qsAll(`[data-id='${selector}']`, parent);
   }
 
-  #delegate(element, selector, eventKey, handler) {
+  #delegate(
+    element: Element,
+    selector: string,
+    eventKey: string,
+    handler: (element: Element) => void
+  ) {
     element.addEventListener(eventKey, (event) => {
+      if (!(event.target instanceof Element)) {
+        throw new Error('Event target not found.');
+      }
+
       if (event.target.matches(selector)) {
         handler(event.target);
       }

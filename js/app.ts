@@ -1,7 +1,8 @@
-import View from './view.js';
-import Model from './model.js';
+import View from './view';
+import Model from './model';
+import { Player } from './types';
 
-const players = [
+const players: Player[] = [
   {
     id: 1,
     name: 'Player 1',
@@ -38,7 +39,7 @@ function init() {
     model.newRound();
   });
 
-  view.bindPlayerMoveEvent((square) => {
+  view.bindPlayerMoveEvent((square: Element) => {
     const existingMove = model.game.moves.find(
       (move) => move.squareId === +square.id
     );
