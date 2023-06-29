@@ -1,4 +1,17 @@
-import type { Player, GameState} from './types';
+import type { Player, GameState, GameStatus, Move } from './types';
+
+type PlayerWithWins = Player & { wins: number };
+
+export type DerivedGame = {
+  moves: Move[],
+  currentPlayer: Player,
+  status: GameStatus,
+}
+
+export type DerivedStats = {
+  playerWithStats: PlayerWithWins[];
+  ties: number;
+};
 
 const initialValue: GameState = {
   currentGameMoves: [],
@@ -27,7 +40,7 @@ export default class Model extends EventTarget {
     super();
   }
 
-  get stats() {
+  get stats(): DerivedStats {
     const state = this.#getState();
 
     return {
@@ -47,7 +60,7 @@ export default class Model extends EventTarget {
     };
   }
 
-  get game() {
+  get game(): DerivedGame {
     const state = this.#getState();
     const currentPlayer = this.players[state.currentGameMoves.length % 2];
 
@@ -114,10 +127,12 @@ export default class Model extends EventTarget {
   #getState(): GameState {
     const item = window.localStorage.getItem(this.storageKey);
 
-    return item ? JSON.parse(item) as GameState : initialValue;
+    return item ? (JSON.parse(item) as GameState) : initialValue;
   }
 
-  #saveState(stateOrFunction: GameState | ((prevState: GameState) => GameState)) {
+  #saveState(
+    stateOrFunction: GameState | ((prevState: GameState) => GameState)
+  ) {
     const prevState = this.#getState();
 
     let newState;

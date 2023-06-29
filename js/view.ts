@@ -1,5 +1,5 @@
-import Model from './model';
-import { Game, Move, Player, Stats } from './types';
+import { DerivedGame, DerivedStats } from './model';
+import { Move, Player } from './types';
 
 export default class View {
   $: Record<string, Element> = {};
@@ -31,7 +31,7 @@ export default class View {
     });
   }
 
-  render(game: Model['game'], stats: Stats) {
+  render(game: DerivedGame, stats: DerivedStats) {
     const { playerWithStats, ties } = stats;
     const {
       moves,
